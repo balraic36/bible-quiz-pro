@@ -1,0 +1,16 @@
+{
+  "name": "Bible Quiz Championship",
+  "short_name": "BibleQuiz",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#D4AF37",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=bible",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ]
+}
