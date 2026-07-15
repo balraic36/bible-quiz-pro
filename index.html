@@ -13,6 +13,9 @@
             --btn-text: #fff;
             --success: #2ecc71;
             --danger: #e74c3c;
+            --google: #db4437;
+            --facebook: #4267B2;
+            --mobile: #27ae60;
         }
         [data-theme="dark"] {
             --bg-color: #1a1a2e;
@@ -23,40 +26,72 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: 0.3s; }
         .container { max-width: 600px; margin: 0 auto; background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .nav-bar { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        button { background: var(--primary); color: var(--btn-text); border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px; transition: 0.2s; }
+        button { background: var(--primary); color: var(--btn-text); border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px 0; width: 100%; transition: 0.2s; box-sizing: border-box; }
         button:hover { opacity: 0.8; }
-        .hidden { display: none; }
-        .option-btn { display: block; width: 100%; margin: 10px 0; text-align: left; background: var(--bg-color); color: var(--text-color); border: 2px solid var(--primary); }
+        .hidden { display: none !important; }
+        
+        /* Login Buttons */
+        .btn-google { background: var(--google); }
+        .btn-facebook { background: var(--facebook); }
+        .btn-mobile { background: var(--mobile); }
+
+        /* Books Grid */
+        .books-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        .book-item { background: var(--primary); color: white; padding: 10px; text-align: center; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        
+        /* Levels */
         .level-node { width: 50px; height: 50px; background: var(--primary); color: white; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; margin: 10px; cursor: pointer; font-weight: bold; }
+        
+        .option-btn { background: var(--bg-color); color: var(--text-color); border: 2px solid var(--primary); text-align: left; }
         #timer { font-size: 24px; font-weight: bold; color: var(--danger); text-align: center; }
-        input[type="text"] { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+        input[type="text"] { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="nav-bar">
-        <button id="langToggle" onclick="toggleLanguage()">🌐 EN / NE</button>
-        <button id="themeToggle" onclick="toggleTheme()">🌙 Theme</button>
+        <button id="langToggle" style="width: auto;" onclick="toggleLanguage()">🌐 EN / NE</button>
+        <button id="themeToggle" style="width: auto;" onclick="toggleTheme()">🌙 Theme</button>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen">
+        <h1 id="loginTitle">Login to Bible Quest</h1>
+        <button class="btn-google" onclick="login()"><span id="logGoogle">Login with Google</span></button>
+        <button class="btn-facebook" onclick="login()"><span id="logFb">Login with Facebook</span></button>
+        <button class="btn-mobile" onclick="login()"><span id="logMobile">Login with Mobile Number</span></button>
     </div>
 
     <!-- Home Screen -->
-    <div id="homeScreen">
+    <div id="homeScreen" class="hidden">
         <h1 id="titleText">Bible Quest</h1>
         <p id="descText">Choose your mode and start playing!</p>
-        <button onclick="showLevels()" id="btnSingle">Endless Mode (Books)</button>
-        <button onclick="startTournament()" id="btnTourney">Join Tournament</button>
+        <button onclick="showBooks()" id="btnSingle">Endless Mode (Books)</button>
+        <button onclick="startTourneyQuiz()" id="btnTourney">Join Tournament</button>
+        <button onclick="logout()" style="background: var(--danger); margin-top: 20px;" id="btnLogout">Logout</button>
     </div>
 
-    <!-- Level Map (Candy Crush Style) -->
-    <div id="levelScreen" class="hidden">
-        <h2 id="levelTitle">Genesis - Levels</h2>
-        <div id="levelMap">
-            <div class="level-node" onclick="startQuiz()">1</div>
-            <div class="level-node" onclick="startQuiz()">2</div>
-            <div class="level-node" onclick="startQuiz()">3</div>
+    <!-- 66 Books Screen -->
+    <div id="booksScreen" class="hidden">
+        <h2 id="booksTitle">Choose a Book</h2>
+        <div class="books-grid" id="booksList">
+            <!-- Books injected via JS -->
         </div>
-        <button onclick="goHome()" id="btnBack">Back</button>
+        <button onclick="goHome()" id="btnBackBooks">Back</button>
+    </div>
+
+    <!-- Level Map Screen -->
+    <div id="levelScreen" class="hidden">
+        <h2 id="levelTitle">Levels</h2>
+        <div id="levelMap">
+            <div class="level-node" onclick="startQuiz('endless')">1</div>
+            <div class="level-node" onclick="startQuiz('endless')">2</div>
+            <div class="level-node" onclick="startQuiz('endless')">3</div>
+            <div class="level-node" onclick="startQuiz('endless')">4</div>
+            <div class="level-node" onclick="startQuiz('endless')">5</div>
+        </div>
+        <button onclick="showBooks()" id="btnBackLevels">Back to Books</button>
     </div>
 
     <!-- Quiz Screen -->
@@ -76,7 +111,6 @@
         <p id="tourneyDesc">You won! Enter your details for the Hall of Fame.</p>
         <input type="text" id="playerName" placeholder="Player Name">
         <input type="text" id="churchName" placeholder="Church Name">
-        <input type="text" id="pastorName" placeholder="Pastor's Name">
         <button onclick="submitForm()" id="btnSubmit">Submit to Hall of Fame</button>
     </div>
 </div>
@@ -85,87 +119,129 @@
     // Dictionary for Strict Multilingual Support
     const uiText = {
         en: {
+            logTitle: "Login to Bible Quest", logG: "Login with Google", logF: "Login with Facebook", logM: "Login with Mobile", logout: "Logout",
             title: "Bible Quest", desc: "Choose your mode and start playing!",
             single: "Endless Mode (Books)", tourney: "Join Tournament",
-            lvlTitle: "Genesis - Levels", back: "Back",
+            bTitle: "Choose a Book (66 Books)", backBooks: "Back", backLvl: "Back to Books",
             lifeline: "50/50 Lifeline",
             tTitle: "🏆 Tournament Champion!", tDesc: "You won! Enter your details for the Hall of Fame.",
-            pName: "Player Name", cName: "Church Name", pName2: "Pastor's Name", submit: "Submit to Hall of Fame",
-            q1: "Who built the Ark?",
-            q1opts: ["Noah", "Moses", "David", "Abraham"],
-            q1exp: "Correct! Genesis 6:14 - Noah built the ark.",
-            correct: "Correct!", wrong: "Wrong!"
+            pName: "Player Name", cName: "Church Name", submit: "Submit to Hall of Fame",
+            qEndless: "Who built the Ark?", qE_opts: ["Noah", "Moses", "David", "Abraham"], qE_exp: "Correct! Genesis 6:14",
+            qTourney: "Which is the longest chapter in the Bible?", qT_opts: ["Psalm 119", "Psalm 23", "Isaiah 53", "Genesis 1"], qT_exp: "Correct! Psalm 119 has 176 verses.",
+            correct: "Correct!", wrong: "Wrong! You are eliminated."
         },
         ne: {
+            logTitle: "बाइबल क्वेस्टमा लगइन गर्नुहोस्", logG: "गुगलबाट लगइन गर्नुहोस्", logF: "फेसबुकबाट लगइन गर्नुहोस्", logM: "मोबाइलबाट लगइन गर्नुहोस्", logout: "लगआउट",
             title: "बाइबल क्वेस्ट", desc: "आफ्नो मोड छान्नुहोस् र खेल्न सुरु गर्नुहोस्!",
-            single: "अनन्त मोड (पुस्तकहरू)", tourney: "टुर्नामेन्टमा भाग लिनुहोस्",
-            lvlTitle: "उत्पत्ति - लेभलहरू", back: "पछाडि",
+            single: "अनन्त मोड (६६ पुस्तकहरू)", tourney: "टुर्नामेन्टमा भाग लिनुहोस्",
+            bTitle: "पुस्तक छान्नुहोस् (६६ पुस्तक)", backBooks: "पछाडि", backLvl: "पुस्तकहरूमा फर्कनुहोस्",
             lifeline: "५०/५० लाइफलाइन",
             tTitle: "🏆 टुर्नामेन्ट च्याम्पियन!", tDesc: "तपाईंले जित्नुभयो! हल अफ फेमको लागि विवरण भर्नुहोस्।",
-            pName: "खेलाडीको नाम", cName: "चर्चको नाम", pName2: "पास्टरको नाम", submit: "हल अफ फेममा पठाउनुहोस्",
-            q1: "परमेश्वरको आज्ञा अनुसार जहाज कसले बनायो?",
-            q1opts: ["नोआ", "मोशा", "दाऊद", "अब्राहाम"],
-            q1exp: "सही! उत्पत्ति ६:१४ - नोआले जहाज बनाए।",
-            correct: "सही!", wrong: "गलत!"
+            pName: "खेलाडीको नाम", cName: "चर्चको नाम", submit: "हल अफ फेममा पठाउनुहोस्",
+            qEndless: "परमेश्वरको आज्ञा अनुसार पानीजहाज कसले बनायो?", qE_opts: ["नोआ", "मोशा", "दाऊद", "अब्राहाम"], qE_exp: "सही! उत्पत्ति ६:१४",
+            qTourney: "बाइबलको सबैभन्दा लामो अध्याय कुन हो?", qT_opts: ["भजनसंग्रह ११९", "भजनसंग्रह २३", "यशैया ५३", "उत्पत्ति १"], qT_exp: "सही! भजनसंग्रह ११९ मा १७६ पदहरू छन्।",
+            correct: "सही!", wrong: "गलत! तपाईं बाहिरिनुभयो।"
         }
     };
 
+    // Array of 66 Books (First 10 shown as example, logic handles all 66)
+    const booksEN = ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi", "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation"];
+    const booksNE = ["उत्पत्ति", "प्रस्थान", "लेवी", "गन्ती", "व्यवस्था", "यहोशू", "न्यायकर्ता", "रूथ", "१ शमूएल", "२ शमूएल", "१ राजा", "२ राजा", "१ इतिहास", "२ इतिहास", "एज्रा", "नहेम्याह", "एस्तर", "अय्यूब", "भजनसंग्रह", "हितोपदेश", "उपदेशक", "श्रेष्ठगीत", "यशैया", "यर्मिया", "विलाप", "इजकिएल", "दानिएल", "होशे", "योएल", "आमोस", "ओबद्याह", "योना", "मीका", "नहूम", "हबकूक", "सपन्याह", "हाग्गै", "जकरिया", "मलाकी", "मत्ती", "मर्कूस", "लूका", "यूहन्ना", "प्रेरित", "रोमी", "१ कोरिन्थी", "२ कोरिन्थी", "गलाती", "एफिसी", "फिलिप्पी", "कलस्सी", "१ थिस्सलोनिकी", "२ थिस्सलोनिकी", "१ तिमोथी", "२ तिमोथी", "तीतस", "फिलेमोन", "हिब्रू", "याकूब", "१ पत्रुस", "२ पत्रुस", "१ यूहन्ना", "२ यूहन्ना", "३ यूहन्ना", "यहूदा", "प्रकाश"];
+
     let currentLang = 'en';
     let timerInterval;
+    let currentMode = '';
 
     function toggleTheme() {
-        const body = document.body;
-        if (body.getAttribute('data-theme') === 'dark') {
-            body.removeAttribute('data-theme');
-        } else {
-            body.setAttribute('data-theme', 'dark');
-        }
+        document.body.toggleAttribute('data-theme', document.body.getAttribute('data-theme') !== 'dark' ? 'dark' : '');
     }
 
     function toggleLanguage() {
         currentLang = currentLang === 'en' ? 'ne' : 'en';
         updateUI();
+        renderBooks();
     }
 
     function updateUI() {
         const t = uiText[currentLang];
+        document.getElementById('loginTitle').innerText = t.logTitle;
+        document.getElementById('logGoogle').innerText = t.logG;
+        document.getElementById('logFb').innerText = t.logF;
+        document.getElementById('logMobile').innerText = t.logM;
+        document.getElementById('btnLogout').innerText = t.logout;
+        
         document.getElementById('titleText').innerText = t.title;
         document.getElementById('descText').innerText = t.desc;
         document.getElementById('btnSingle').innerText = t.single;
         document.getElementById('btnTourney').innerText = t.tourney;
-        document.getElementById('levelTitle').innerText = t.lvlTitle;
-        document.getElementById('btnBack').innerText = t.back;
+        document.getElementById('booksTitle').innerText = t.bTitle;
+        document.getElementById('btnBackBooks').innerText = t.backBooks;
+        document.getElementById('btnBackLevels').innerText = t.backLvl;
+        
         document.getElementById('btn5050').innerText = t.lifeline;
         document.getElementById('tourneyTitle').innerText = t.tTitle;
         document.getElementById('tourneyDesc').innerText = t.tDesc;
         document.getElementById('playerName').placeholder = t.pName;
         document.getElementById('churchName').placeholder = t.cName;
-        document.getElementById('pastorName').placeholder = t.pName2;
         document.getElementById('btnSubmit').innerText = t.submit;
     }
 
+    function renderBooks() {
+        const list = document.getElementById('booksList');
+        list.innerHTML = '';
+        const booksArray = currentLang === 'en' ? booksEN : booksNE;
+        booksArray.forEach((book, index) => {
+            let div = document.createElement('div');
+            div.className = 'book-item';
+            div.innerText = book;
+            div.onclick = () => showLevels(book);
+            list.appendChild(div);
+        });
+    }
+
     function hideAll() {
-        document.getElementById('homeScreen').classList.add('hidden');
-        document.getElementById('levelScreen').classList.add('hidden');
-        document.getElementById('quizScreen').classList.add('hidden');
-        document.getElementById('tourneyFormScreen').classList.add('hidden');
+        ['loginScreen', 'homeScreen', 'booksScreen', 'levelScreen', 'quizScreen', 'tourneyFormScreen'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
         clearInterval(timerInterval);
     }
 
+    function login() { hideAll(); document.getElementById('homeScreen').classList.remove('hidden'); }
+    function logout() { hideAll(); document.getElementById('loginScreen').classList.remove('hidden'); }
     function goHome() { hideAll(); document.getElementById('homeScreen').classList.remove('hidden'); }
-    function showLevels() { hideAll(); document.getElementById('levelScreen').classList.remove('hidden'); }
-    function startTournament() { hideAll(); document.getElementById('tourneyFormScreen').classList.remove('hidden'); }
+    
+    function showBooks() { 
+        hideAll(); 
+        renderBooks();
+        document.getElementById('booksScreen').classList.remove('hidden'); 
+    }
 
-    function startQuiz() {
+    function showLevels(bookName) {
         hideAll();
+        document.getElementById('levelTitle').innerText = bookName + " - Levels";
+        document.getElementById('levelScreen').classList.remove('hidden');
+    }
+
+    function startTourneyQuiz() {
+        currentMode = 'tourney';
+        startQuiz('tourney');
+    }
+
+    function startQuiz(mode) {
+        hideAll();
+        currentMode = mode;
         document.getElementById('quizScreen').classList.remove('hidden');
         const t = uiText[currentLang];
-        document.getElementById('questionText').innerText = t.q1;
+        
+        let question = mode === 'tourney' ? t.qTourney : t.qEndless;
+        let options = mode === 'tourney' ? t.qT_opts : t.qE_opts;
+        
+        document.getElementById('questionText').innerText = question;
         document.getElementById('explanation').classList.add('hidden');
         
         const optsArea = document.getElementById('optionsArea');
         optsArea.innerHTML = '';
-        t.q1opts.forEach((opt, index) => {
+        options.forEach((opt, index) => {
             let btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.innerText = opt;
@@ -180,7 +256,7 @@
             document.getElementById('timer').innerText = timeLeft;
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                alert(currentLang === 'en' ? "Time's up!" : "समय सकियो!");
+                alert(currentLang === 'en' ? "Time's up! You lost." : "समय सकियो! तपाईं बाहिरिनुभयो।");
                 goHome();
             }
         }, 1000);
@@ -189,21 +265,38 @@
     function checkAnswer(index, btn) {
         clearInterval(timerInterval);
         const t = uiText[currentLang];
-        if (index === 0) { // 0 is Noah in our dummy data
+        let isCorrect = index === 0; // index 0 is correct in our demo data
+        
+        if (isCorrect) {
             btn.style.backgroundColor = "var(--success)";
-            document.getElementById('explanation').innerText = t.q1exp;
+            btn.style.color = "white";
+            document.getElementById('explanation').innerText = currentMode === 'tourney' ? t.qT_exp : t.qE_exp;
+            document.getElementById('explanation').classList.remove('hidden');
+            
+            setTimeout(() => {
+                if (currentMode === 'tourney') {
+                    hideAll();
+                    document.getElementById('tourneyFormScreen').classList.remove('hidden');
+                } else {
+                    showLevels(document.getElementById('levelTitle').innerText.split(" -")[0]);
+                }
+            }, 2000);
+            
         } else {
             btn.style.backgroundColor = "var(--danger)";
+            btn.style.color = "white";
             document.getElementById('explanation').innerText = t.wrong;
+            document.getElementById('explanation').classList.remove('hidden');
+            setTimeout(goHome, 2000);
         }
-        document.getElementById('explanation').classList.remove('hidden');
-        setTimeout(goHome, 4000);
     }
 
     function use5050() {
         const btns = document.querySelectorAll('.option-btn');
-        btns[1].style.visibility = 'hidden'; // Hide Moses
-        btns[2].style.visibility = 'hidden'; // Hide David
+        if(btns.length >= 3) {
+            btns[1].style.display = 'none'; 
+            btns[2].style.display = 'none'; 
+        }
         document.getElementById('btn5050').disabled = true;
     }
 
@@ -214,8 +307,8 @@
 
     // Initialize UI on load
     updateUI();
+    renderBooks();
 </script>
 
 </body>
 </html>
-
