@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Quest: Ultimate Quiz</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --primary: #4A90E2;
+            --card-bg: #fff;
+            --btn-text: #fff;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e;
+            --text-color: #e0e0e0;
+            --card-bg: #16213e;
+            --primary: #0f3460;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: 0.3s; }
+        .container { max-width: 600px; margin: 0 auto; background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        button { background: var(--primary); color: var(--btn-text); border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px; transition: 0.2s; }
+        button:hover { opacity: 0.8; }
+        .hidden { display: none; }
+        .option-btn { display: block; width: 100%; margin: 10px 0; text-align: left; background: var(--bg-color); color: var(--text-color); border: 2px solid var(--primary); }
+        .level-node { width: 50px; height: 50px; background: var(--primary); color: white; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; margin: 10px; cursor: pointer; font-weight: bold; }
+        #timer { font-size: 24px; font-weight: bold; color: var(--danger); text-align: center; }
+        input[type="text"] { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="nav-bar">
+        <button id="langToggle" onclick="toggleLanguage()">🌐 EN / NE</button>
+        <button id="themeToggle" onclick="toggleTheme()">🌙 Theme</button>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="homeScreen">
+        <h1 id="titleText">Bible Quest</h1>
+        <p id="descText">Choose your mode and start playing!</p>
+        <button onclick="showLevels()" id="btnSingle">Endless Mode (Books)</button>
+        <button onclick="startTournament()" id="btnTourney">Join Tournament</button>
+    </div>
+
+    <!-- Level Map (Candy Crush Style) -->
+    <div id="levelScreen" class="hidden">
+        <h2 id="levelTitle">Genesis - Levels</h2>
+        <div id="levelMap">
+            <div class="level-node" onclick="startQuiz()">1</div>
+            <div class="level-node" onclick="startQuiz()">2</div>
+            <div class="level-node" onclick="startQuiz()">3</div>
+        </div>
+        <button onclick="goHome()" id="btnBack">Back</button>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" class="hidden">
+        <div id="timer">15</div>
+        <div class="nav-bar">
+            <button onclick="use5050()" id="btn5050">50/50 Lifeline</button>
+        </div>
+        <h3 id="questionText">Question goes here?</h3>
+        <div id="optionsArea"></div>
+        <p id="explanation" class="hidden" style="color: var(--success); font-weight: bold;"></p>
+    </div>
+
+    <!-- Tournament Form (Grand Finale) -->
+    <div id="tourneyFormScreen" class="hidden">
+        <h2 id="tourneyTitle">🏆 Tournament Champion!</h2>
+        <p id="tourneyDesc">You won! Enter your details for the Hall of Fame.</p>
+        <input type="text" id="playerName" placeholder="Player Name">
+        <input type="text" id="churchName" placeholder="Church Name">
+        <input type="text" id="pastorName" placeholder="Pastor's Name">
+        <button onclick="submitForm()" id="btnSubmit">Submit to Hall of Fame</button>
+    </div>
+</div>
+
+<script>
+    // Dictionary for Strict Multilingual Support
+    const uiText = {
+        en: {
+            title: "Bible Quest", desc: "Choose your mode and start playing!",
+            single: "Endless Mode (Books)", tourney: "Join Tournament",
+            lvlTitle: "Genesis - Levels", back: "Back",
+            lifeline: "50/50 Lifeline",
+            tTitle: "🏆 Tournament Champion!", tDesc: "You won! Enter your details for the Hall of Fame.",
+            pName: "Player Name", cName: "Church Name", pName2: "Pastor's Name", submit: "Submit to Hall of Fame",
+            q1: "Who built the Ark?",
+            q1opts: ["Noah", "Moses", "David", "Abraham"],
+            q1exp: "Correct! Genesis 6:14 - Noah built the ark.",
+            correct: "Correct!", wrong: "Wrong!"
+        },
+        ne: {
+            title: "बाइबल क्वेस्ट", desc: "आफ्नो मोड छान्नुहोस् र खेल्न सुरु गर्नुहोस्!",
+            single: "अनन्त मोड (पुस्तकहरू)", tourney: "टुर्नामेन्टमा भाग लिनुहोस्",
+            lvlTitle: "उत्पत्ति - लेभलहरू", back: "पछाडि",
+            lifeline: "५०/५० लाइफलाइन",
+            tTitle: "🏆 टुर्नामेन्ट च्याम्पियन!", tDesc: "तपाईंले जित्नुभयो! हल अफ फेमको लागि विवरण भर्नुहोस्।",
+            pName: "खेलाडीको नाम", cName: "चर्चको नाम", pName2: "पास्टरको नाम", submit: "हल अफ फेममा पठाउनुहोस्",
+            q1: "परमेश्वरको आज्ञा अनुसार जहाज कसले बनायो?",
+            q1opts: ["नोआ", "मोशा", "दाऊद", "अब्राहाम"],
+            q1exp: "सही! उत्पत्ति ६:१४ - नोआले जहाज बनाए।",
+            correct: "सही!", wrong: "गलत!"
+        }
+    };
+
+    let currentLang = 'en';
+    let timerInterval;
+
+    function toggleTheme() {
+        const body = document.body;
+        if (body.getAttribute('data-theme') === 'dark') {
+            body.removeAttribute('data-theme');
+        } else {
+            body.setAttribute('data-theme', 'dark');
+        }
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'en' ? 'ne' : 'en';
+        updateUI();
+    }
+
+    function updateUI() {
+        const t = uiText[currentLang];
+        document.getElementById('titleText').innerText = t.title;
+        document.getElementById('descText').innerText = t.desc;
+        document.getElementById('btnSingle').innerText = t.single;
+        document.getElementById('btnTourney').innerText = t.tourney;
+        document.getElementById('levelTitle').innerText = t.lvlTitle;
+        document.getElementById('btnBack').innerText = t.back;
+        document.getElementById('btn5050').innerText = t.lifeline;
+        document.getElementById('tourneyTitle').innerText = t.tTitle;
+        document.getElementById('tourneyDesc').innerText = t.tDesc;
+        document.getElementById('playerName').placeholder = t.pName;
+        document.getElementById('churchName').placeholder = t.cName;
+        document.getElementById('pastorName').placeholder = t.pName2;
+        document.getElementById('btnSubmit').innerText = t.submit;
+    }
+
+    function hideAll() {
+        document.getElementById('homeScreen').classList.add('hidden');
+        document.getElementById('levelScreen').classList.add('hidden');
+        document.getElementById('quizScreen').classList.add('hidden');
+        document.getElementById('tourneyFormScreen').classList.add('hidden');
+        clearInterval(timerInterval);
+    }
+
+    function goHome() { hideAll(); document.getElementById('homeScreen').classList.remove('hidden'); }
+    function showLevels() { hideAll(); document.getElementById('levelScreen').classList.remove('hidden'); }
+    function startTournament() { hideAll(); document.getElementById('tourneyFormScreen').classList.remove('hidden'); }
+
+    function startQuiz() {
+        hideAll();
+        document.getElementById('quizScreen').classList.remove('hidden');
+        const t = uiText[currentLang];
+        document.getElementById('questionText').innerText = t.q1;
+        document.getElementById('explanation').classList.add('hidden');
+        
+        const optsArea = document.getElementById('optionsArea');
+        optsArea.innerHTML = '';
+        t.q1opts.forEach((opt, index) => {
+            let btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optsArea.appendChild(btn);
+        });
+
+        let timeLeft = 15;
+        document.getElementById('timer').innerText = timeLeft;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert(currentLang === 'en' ? "Time's up!" : "समय सकियो!");
+                goHome();
+            }
+        }, 1000);
+    }
+
+    function checkAnswer(index, btn) {
+        clearInterval(timerInterval);
+        const t = uiText[currentLang];
+        if (index === 0) { // 0 is Noah in our dummy data
+            btn.style.backgroundColor = "var(--success)";
+            document.getElementById('explanation').innerText = t.q1exp;
+        } else {
+            btn.style.backgroundColor = "var(--danger)";
+            document.getElementById('explanation').innerText = t.wrong;
+        }
+        document.getElementById('explanation').classList.remove('hidden');
+        setTimeout(goHome, 4000);
+    }
+
+    function use5050() {
+        const btns = document.querySelectorAll('.option-btn');
+        btns[1].style.visibility = 'hidden'; // Hide Moses
+        btns[2].style.visibility = 'hidden'; // Hide David
+        document.getElementById('btn5050').disabled = true;
+    }
+
+    function submitForm() {
+        alert(currentLang === 'en' ? "Added to Hall of Fame!" : "हल अफ फेममा सुरक्षित भयो!");
+        goHome();
+    }
+
+    // Initialize UI on load
+    updateUI();
+</script>
+
+</body>
+</html>
+
