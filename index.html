@@ -1,649 +1,294 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="ne">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Bible Quiz Championship</title>
-    <!-- Tailwind CSS for modern styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        gold: '#D4AF37',
-                        spiritualBlue: '#1e3a8a',
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome for beautiful icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>NNRV Quiz Generator (Auto-Fetch)</title>
     <style>
-        .custom-tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; background-color: #f0f2f5; margin: 0; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        h2 { text-align: center; color: #f55036; margin-top: 0; }
+        .subtitle { text-align: center; color: #555; font-size: 13px; margin-bottom: 20px; }
+        label { font-weight: 600; margin-top: 15px; display: block; font-size: 14px; color: #333; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus, select:focus, textarea:focus { border-color: #f55036; outline: none; }
+        button { width: 100%; padding: 14px; margin-top: 20px; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.3s; }
+        .btn-generate { background-color: #f55036; color: white; }
+        .btn-generate:hover { background-color: #d43f27; }
+        .btn-generate:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-download { background-color: #28a745; color: white; display: none; }
+        .btn-download:hover { background-color: #218838; }
+        .btn-fetch { background-color: #2F5597; color: white; margin-top: 10px; padding: 10px; font-size: 14px; }
+        .btn-fetch:hover { background-color: #1e3a68; }
+        #status { margin-top: 15px; font-size: 14px; font-weight: bold; text-align: center; }
+        .flex-row { display: flex; gap: 10px; align-items: flex-end; }
+        .flex-row select { margin-top: 0; }
+        .info-text { font-size: 11px; color: #666; margin-top: 5px; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col justify-between">
+<body>
 
-    <!-- NAVIGATION BAR -->
-    <header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-book-bible text-3xl text-yellow-500"></i>
-                <span id="nav-title" class="text-xl font-bold tracking-wider">Bible Quiz</span>
-            </div>
+<div class="container">
+    <h2>बाइबल प्रश्न जेनेरेटर ⚡</h2>
+    <div class="subtitle">Powered by Groq & Auto GitHub Fetch</div>
+    
+    <label>Groq API Key:</label>
+    <input type="password" id="apiKey" placeholder="gsk_...">
+
+    <label>कतिवटा प्रश्न चाहियो?</label>
+    <input type="number" id="qCount" value="20" min="1" max="100">
+
+    <label>प्रश्नको स्तर (Difficulty):</label>
+    <select id="difficulty">
+        <option value="Mixed">सबै मिसाएको (Easy, Medium, Hard)</option>
+        <option value="Easy">सजिलो मात्र (Easy)</option>
+        <option value="Medium">मध्यम मात्र (Medium)</option>
+        <option value="Hard">गाह्रो मात्र (Hard)</option>
+    </select>
+
+    <!-- अटोमेटिक GitHub डेटा तान्ने सेक्सन -->
+    <label>पुस्तक छान्नुहोस् (डेटा तान्नको लागि):</label>
+    <div class="flex-row">
+        <select id="bookSelect">
+            <optgroup label="पुरानो करार (Old Testament)">
+                <option value="GEN">उत्पत्ति (Genesis)</option>
+                <option value="EXO">प्रस्थान (Exodus)</option>
+                <option value="LEV">लेवी (Leviticus)</option>
+                <option value="NUM">गन्ती (Numbers)</option>
+                <option value="DEU">व्यवस्था (Deuteronomy)</option>
+                <option value="JOS">यहोशू (Joshua)</option>
+                <option value="JDG">न्यायकर्ता (Judges)</option>
+                <option value="RUT">रूथ (Ruth)</option>
+                <option value="1SA">१ शमूएल (1 Samuel)</option>
+                <option value="2SA">२ शमूएल (2 Samuel)</option>
+                <option value="1KI">१ राजा (1 Kings)</option>
+                <option value="2KI">२ राजा (2 Kings)</option>
+                <option value="1CH">१ इतिहास (1 Chronicles)</option>
+                <option value="2CH">२ इतिहास (2 Chronicles)</option>
+                <option value="EZR">एज्रा (Ezra)</option>
+                <option value="NEH">नहेम्याह (Nehemiah)</option>
+                <option value="EST">एस्तर (Esther)</option>
+                <option value="JOB">अय्यूब (Job)</option>
+                <option value="PSA">भजनसंग्रह (Psalms)</option>
+                <option value="PRO">हितोपदेश (Proverbs)</option>
+                <option value="ECC">उपदेशक (Ecclesiastes)</option>
+                <option value="SNG">श्रेष्ठगीत (Song of Solomon)</option>
+                <option value="ISA">यशैया (Isaiah)</option>
+                <option value="JER">यर्मिया (Jeremiah)</option>
+                <option value="LAM">विलाप (Lamentations)</option>
+                <option value="EZK">इजकिएल (Ezekiel)</option>
+                <option value="DAN">दानिएल (Daniel)</option>
+                <option value="HOS">होशे (Hosea)</option>
+                <option value="JOL">योएल (Joel)</option>
+                <option value="AMO">आमोस (Amos)</option>
+                <option value="OBA">ओबद्याह (Obadiah)</option>
+                <option value="JON">योना (Jonah)</option>
+                <option value="MIC">मीका (Micah)</option>
+                <option value="NAM">नहूम (Nahum)</option>
+                <option value="HAB">हबकूक (Habakkuk)</option>
+                <option value="ZEP">सपन्याह (Zephaniah)</option>
+                <option value="HAG">हाग्गै (Haggai)</option>
+                <option value="ZEC">जकरिया (Zechariah)</option>
+                <option value="MAL">मलाकी (Malachi)</option>
+            </optgroup>
+            <optgroup label="नयाँ करार (New Testament)">
+                <option value="MAT">मत्ती (Matthew)</option>
+                <option value="MAR">मर्कूस (Mark)</option>
+                <option value="LUK">लूका (Luke)</option>
+                <option value="JHN">यूहन्ना (John)</option>
+                <option value="ACT">प्रेरित (Acts)</option>
+                <option value="ROM">रोमी (Romans)</option>
+                <option value="1CO">१ कोरिन्थी (1 Corinthians)</option>
+                <option value="2CO">२ कोरिन्थी (2 Corinthians)</option>
+                <option value="GAL">गलाती (Galatians)</option>
+                <option value="EPH">एफिसी (Ephesians)</option>
+                <option value="PHP">फिलिप्पी (Philippians)</option>
+                <option value="COL">कलस्सी (Colossians)</option>
+                <option value="1TH">१ थिस्सलोनिकी (1 Thessalonians)</option>
+                <option value="2TH">२ थिस्सलोनिकी (2 Thessalonians)</option>
+                <option value="1TI">१ तिमोथी (1 Timothy)</option>
+                <option value="2TI">२ तिमोथी (2 Timothy)</option>
+                <option value="TIT">तीतस (Titus)</option>
+                <option value="PHM">फिलेमोन (Philemon)</option>
+                <option value="HEB">हिब्रू (Hebrews)</option>
+                <option value="JAS">याकूब (James)</option>
+                <option value="1PE">१ पत्रुस (1 Peter)</option>
+                <option value="2PE">२ पत्रुस (2 Peter)</option>
+                <option value="1JN">१ यूहन्ना (1 John)</option>
+                <option value="2JN">२ यूहन्ना (2 John)</option>
+                <option value="3JN">३ यूहन्ना (3 John)</option>
+                <option value="JUD">यहूदा (Jude)</option>
+                <option value="REV">प्रकाश (Revelation)</option>
+            </optgroup>
+        </select>
+        <button class="btn-fetch" onclick="fetchFromGitHub()" style="width: auto; white-space: nowrap;">पाठ तान्नुहोस्</button>
+    </div>
+    
+    <div class="info-text">💡 पाठ तानिसकेपछि, बक्सबाट आफूलाई नचाहिने अध्यायहरू मेटाइदिनुहोला।</div>
+
+    <label>बाइबलको पाठ (Text):</label>
+    <textarea id="bibleText" rows="6" placeholder="पुस्तक छानेर 'पाठ तान्नुहोस्' थिच्नुहोस्..."></textarea>
+
+    <!-- प्रश्नको सन्दर्भको लागि -->
+    <label>प्रश्नमा कुन अध्याय देखिने? (जस्तै: उत्पत्ति १):</label>
+    <input type="text" id="chapterDetails" placeholder="जस्तै: मत्ती ५">
+
+    <button class="btn-generate" id="generateBtn" onclick="generateQuestions()">प्रश्नहरू बनाउनुहोस् (Generate)</button>
+    
+    <div id="status"></div>
+
+    <button class="btn-download" id="downloadBtn" onclick="downloadJSON()">JSON डाउनलोड गर्नुहोस् ⬇️</button>
+</div>
+
+<script>
+    let generatedData = null;
+
+    async function fetchFromGitHub() {
+        const bookCode = document.getElementById('bookSelect').value;
+        const bookName = document.getElementById('bookSelect').options[document.getElementById('bookSelect').selectedIndex].text;
+        
+        const url = `https://raw.githubusercontent.com/iyamsamrat/NNRV_Bible/main/${bookCode}.json`;
+        const statusEl = document.getElementById('status');
+        const textArea = document.getElementById('bibleText');
+        const chapterDetails = document.getElementById('chapterDetails');
+
+        statusEl.innerText = `${bookName} तान्दै... ⏳`;
+        statusEl.style.color = "#007bff";
+        textArea.value = "डेटा डाउनलोड हुँदैछ, कृपया पर्खनुहोस्...";
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("डेटा भेटिएन।");
+            const textData = await response.text();
             
-            <div class="flex items-center space-x-4">
-                <!-- Kids Mode Toggle -->
-                <button id="kids-mode-btn" onclick="toggleKidsMode()" class="px-3 py-1 rounded-full text-xs font-bold border border-pink-400 text-pink-500 hover:bg-pink-100 dark:hover:bg-pink-900 transition">
-                    👶 <span id="kids-btn-text">Kids Mode: OFF</span>
-                </button>
-
-                <!-- Language Switcher -->
-                <select id="lang-select" onchange="switchLanguage(this.value)" class="bg-gray-100 dark:bg-gray-700 text-sm rounded-md px-2 py-1 border border-gray-300 dark:border-gray-600 focus:outline-none">
-                    <option value="en">English (Default)</option>
-                    <option value="ne">नेपाली</option>
-                </select>
-
-                <!-- Theme Toggle -->
-                <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
-                    <i id="theme-icon" class="fa-solid fa-sun text-yellow-400 text-lg"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- MAIN CONTAINER -->
-    <main class="max-w-4xl mx-auto p-4 w-full flex-grow flex flex-col justify-center">
-
-        <!-- AUTHENTICATION CARD (MOCK LOGIN) -->
-        <div id="auth-card" class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl text-center space-y-6">
-            <h2 id="auth-welcome" class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-600">Welcome to Bible Arena</h2>
-            <p id="auth-desc" class="text-gray-500 dark:text-gray-400">Login to start competing globally and save your ranks.</p>
+            try {
+                const jsonObj = JSON.parse(textData);
+                textArea.value = JSON.stringify(jsonObj, null, 2);
+            } catch (e) {
+                textArea.value = textData;
+            }
             
-            <div class="flex flex-col space-y-3 max-w-sm mx-auto">
-                <button onclick="simulateLogin('google')" class="flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition">
-                    <i class="fa-brands fa-google"></i>
-                    <span id="login-google">Sign in with Google</span>
-                </button>
-                <button onclick="simulateLogin('phone')" class="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition">
-                    <i class="fa-solid fa-phone"></i>
-                    <span id="login-phone">Sign in with Phone / OTP</span>
-                </button>
-                <button onclick="simulateLogin('guest')" class="flex items-center justify-center space-x-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition">
-                    <i class="fa-solid fa-user-secret"></i>
-                    <span id="login-guest">Play as Guest</span>
-                </button>
-            </div>
-        </div>
+            chapterDetails.value = bookName.split(' ')[0]; 
 
-        <!-- MAIN GAME HUB (VISIBLE AFTER LOGIN) -->
-        <div id="game-hub" class="hidden space-y-6">
-            <!-- User Profile & Stats Header -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow flex items-center space-x-4">
-                    <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=bible" class="w-12 h-12 rounded-full border-2 border-yellow-500" alt="Avatar">
-                    <div>
-                        <h4 id="user-name-display" class="font-bold text-lg">Disciple John</h4>
-                        <p class="text-xs text-yellow-500 font-semibold" id="user-rank-title">🏆 Scholar Level 1</p>
-                    </div>
-                </div>
+            statusEl.innerText = `✅ ${bookName} सफलतापूर्वक तानियो! नचाहिने भाग हटाउन सक्नुहुन्छ।`;
+            statusEl.style.color = "green";
+        } catch (error) {
+            statusEl.innerText = "❌ त्रुटि: पाठ तान्न सकिएन।";
+            statusEl.style.color = "red";
+            textArea.value = "";
+            console.error(error);
+        }
+    }
+
+    async function generateQuestions() {
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const chapterDetails = document.getElementById('chapterDetails').value.trim();
+        const qCount = document.getElementById('qCount').value;
+        const difficulty = document.getElementById('difficulty').value;
+        const bibleText = document.getElementById('bibleText').value.trim();
+        const statusEl = document.getElementById('status');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        if (!apiKey || !chapterDetails || !bibleText) {
+            statusEl.innerText = "कृपया API Key र बाँकी विवरणहरू भर्नुहोस्!";
+            statusEl.style.color = "red";
+            return;
+        }
+
+        statusEl.innerText = "प्रश्नहरू बन्दैछन्... कृपया पर्खनुहोस् ⏳";
+        statusEl.style.color = "#007bff";
+        document.getElementById('generateBtn').disabled = true;
+        downloadBtn.style.display = 'none';
+
+        const prompt = `तपाईं एक NNRV बाइबल क्विज विशेषज्ञ हुनुहुन्छ। तल दिइएको बाइबल पाठ पढेर नेपाली भाषामा ठ्याक्कै ${qCount} वटा बहुवैकल्पिक (MCQ) प्रश्नहरू बनाउनुहोस्।
+प्रश्नको स्तर: ${difficulty === 'Mixed' ? 'Easy, Medium, र Hard मिसाएर' : difficulty + ' मात्र'}
+सन्दर्भ (पुस्तक र अध्याय): ${chapterDetails}
+
+नियम:
+१. तपाईंको आउटपुट अनिवार्य रूपमा एउटा JSON Object हुनुपर्छ।
+२. उक्त JSON Object भित्र "questions" नामको एउटा Array हुनुपर्छ।
+३. प्रत्येक प्रश्नको Schema यस्तो हुनुपर्छ:
+{
+  "category": "Bible Quiz",
+  "bookDetails": "${chapterDetails}",
+  "questionText": "...",
+  "optionA": "...",
+  "optionB": "...",
+  "optionC": "...",
+  "optionD": "...",
+  "correctAnswer": "...",
+  "difficulty": "Easy/Medium/Hard"
+}
+
+बाइबल पाठ:
+${bibleText}`;
+
+        const url = `https://api.groq.com/openai/v1/chat/completions`;
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "llama-3.1-70b-versatile",
+                    messages: [
+                        { role: "system", content: "You are a helpful assistant designed to output strictly JSON." },
+                        { role: "user", content: prompt }
+                    ],
+                    response_format: { type: "json_object" },
+                    temperature: 0.3,
+                    max_tokens: 8000 // टोकन लिमिट बढाएको ताकि धेरै प्रश्न बनाउन सहयोग होस्
+                })
+            });
+
+            // यदि API बाट गलत रेस्पोन्स आएमा असली कारण पत्ता लगाउने
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error?.message || "Groq API लिमिट वा सर्भरमा समस्या आयो।");
+            }
+
+            const data = await response.json();
+            
+            if (data.choices && data.choices[0].message.content) {
+                const jsonObject = JSON.parse(data.choices[0].message.content);
+                const finalArray = jsonObject.questions ? jsonObject.questions : jsonObject;
                 
-                <!-- Streak & Points -->
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow flex justify-around items-center text-center">
-                    <div>
-                        <span class="block text-2xl font-bold text-orange-500">🔥 7</span>
-                        <span id="stat-streak" class="text-xs text-gray-400">Day Streak</span>
-                    </div>
-                    <div>
-                        <span class="block text-2xl font-bold text-yellow-500">1,250</span>
-                        <span id="stat-xp" class="text-xs text-gray-400">XP Points</span>
-                    </div>
-                </div>
-
-                <!-- Daily Verse Card -->
-                <div class="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-xl shadow border border-amber-200 dark:border-amber-900/50">
-                    <h5 id="daily-verse-title" class="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">Verse of the Day</h5>
-                    <p id="daily-verse" class="text-xs italic mt-1 text-gray-600 dark:text-gray-300">"Your word is a lamp for my feet, a light on my path."</p>
-                    <span id="daily-verse-ref" class="block text-[10px] text-right text-gray-400 mt-1">- Psalm 119:105</span>
-                </div>
-            </div>
-
-            <!-- MODE SELECTOR (NORMAL VS TOURNAMENT) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div onclick="startQuiz('classic')" class="bg-gradient-to-br from-blue-600 to-indigo-800 p-6 rounded-2xl shadow-xl text-white cursor-pointer hover:scale-[1.02] transition-transform duration-200">
-                    <h3 class="text-2xl font-bold flex items-center justify-between">
-                        <span id="mode-classic-title">Classic Quiz</span>
-                        <i class="fa-solid fa-trophy text-amber-300"></i>
-                    </h3>
-                    <p id="mode-classic-desc" class="text-sm text-indigo-200 mt-2">Practice book-by-book. Unlock Leviticus after Exodus!</p>
-                    <div class="mt-4 flex space-x-2">
-                        <span class="bg-white/20 text-xs px-2 py-1 rounded">Genesis ✅</span>
-                        <span class="bg-white/20 text-xs px-2 py-1 rounded">Exodus 🔓</span>
-                        <span class="bg-white/5 text-xs px-2 py-1 rounded opacity-50">Leviticus 🔒</span>
-                    </div>
-                </div>
-
-                <div onclick="startQuiz('tournament')" class="bg-gradient-to-br from-red-600 to-amber-700 p-6 rounded-2xl shadow-xl text-white cursor-pointer hover:scale-[1.02] transition-transform duration-200">
-                    <h3 class="text-2xl font-bold flex items-center justify-between">
-                        <span id="mode-tourney-title">Tournament Mode</span>
-                        <i class="fa-solid fa-circle-play text-red-300 animate-pulse"></i>
-                    </h3>
-                    <p id="mode-tourney-desc" class="text-sm text-amber-100 mt-2">Real-time multiplayer survival. Reach the final to register your Church and Pastor!</p>
-                    <span class="inline-block mt-4 bg-yellow-500 text-xs font-bold text-gray-900 px-3 py-1 rounded-full uppercase" id="tourney-status">Live Now</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ACTIVE QUIZ ARENA -->
-        <div id="quiz-arena" class="hidden bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6">
-            <!-- Timer & Progress -->
-            <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-4">
-                <div>
-                    <span id="question-level" class="text-xs font-bold text-yellow-600 bg-yellow-100 dark:bg-yellow-950 dark:text-yellow-400 px-2.5 py-1 rounded-full">Level: Intermediate</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <i class="fa-regular fa-clock text-red-500 animate-spin"></i>
-                    <span id="timer" class="font-bold text-red-500 text-lg">15s</span>
-                </div>
-            </div>
-
-            <!-- Lifelines Panel -->
-            <div class="flex space-x-3 justify-end text-xs">
-                <button id="lifeline-5050" onclick="use5050()" class="bg-purple-100 hover:bg-purple-200 dark:bg-purple-950 dark:text-purple-300 text-purple-700 px-3 py-1.5 rounded-lg font-semibold flex items-center space-x-1">
-                    <span>⚡ 50/50</span>
-                </button>
-                <button id="lifeline-poll" onclick="useAudiencePoll()" class="bg-teal-100 hover:bg-teal-200 dark:bg-teal-950 dark:text-teal-300 text-teal-700 px-3 py-1.5 rounded-lg font-semibold flex items-center space-x-1">
-                    <span>📊 Audience Poll</span>
-                </button>
-            </div>
-
-            <!-- Question & Dictionary Popups inside it -->
-            <div class="space-y-2">
-                <h3 id="question-text" class="text-xl font-bold leading-relaxed">
-                    Who were the <span class="custom-tooltip text-blue-500 underline cursor-help relative inline-block">Pharisees<span class="tooltip-text invisible opacity-0 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-950 text-white text-xs rounded-md shadow-lg transition-opacity duration-300 text-center">A strict Jewish sect known for holding closely to written laws.</span></span> in the New Testament?
-                </h3>
-                <p id="verse-hint" class="text-sm text-gray-400 italic hidden">Hint: Look up Matthew 23</p>
-            </div>
-
-            <!-- Options Grid -->
-            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Dynamically Rendered via JS -->
-            </div>
-
-            <!-- Bottom Control: Explain, Next, Report -->
-            <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
-                <button onclick="reportError()" class="text-xs text-red-400 hover:text-red-500 flex items-center space-x-1">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <span id="btn-report">Report Error</span>
-                </button>
-                <button id="next-btn" onclick="nextQuestion()" class="hidden bg-yellow-500 hover:bg-yellow-600 text-gray-950 font-bold px-6 py-2 rounded-lg transition">
-                    <span id="btn-next">Next Question</span>
-                </button>
-            </div>
-
-            <!-- Detailed Explanation Box -->
-            <div id="explanation-box" class="hidden bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded">
-                <p class="font-bold text-sm text-blue-800 dark:text-blue-300" id="explanation-title">Explanation:</p>
-                <p id="explanation-text" class="text-xs text-gray-600 dark:text-gray-300 mt-1"></p>
-                <span id="verse-ref" class="block text-xs font-bold text-blue-600 dark:text-blue-400 mt-2">Verse: John 3:16</span>
-            </div>
-        </div>
-
-        <!-- MULTIPLAYER TOURNAMENT FINALIST SCREEN (CHURCH DETAILS) -->
-        <div id="tournament-finalist-card" class="hidden bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border-4 border-yellow-500 text-center space-y-6">
-            <div class="relative flex justify-center">
-                <i class="fa-solid fa-crown text-6xl text-yellow-500 animate-bounce"></i>
-            </div>
-            <h2 id="final-congrats" class="text-3xl font-extrabold text-gray-900 dark:text-white">CONGRATULATIONS CHAMPION!</h2>
-            <p id="final-sub" class="text-gray-500 dark:text-gray-400 text-sm">You have won the Bible Quiz Tournament! Register your details to list your local church globally.</p>
-            
-            <form id="finalist-form" onsubmit="submitFinalist(event)" class="space-y-4 max-w-md mx-auto text-left">
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1" id="lbl-champion">Champion Name</label>
-                    <input type="text" required id="champion-name" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-2 focus:ring-yellow-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1" id="lbl-church">Church Name</label>
-                    <input type="text" required id="church-name" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-2 focus:ring-yellow-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1" id="lbl-pastor">Pastor's Name</label>
-                    <input type="text" required id="pastor-name" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-2 focus:ring-yellow-500 outline-none">
-                </div>
-                <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-950 font-bold py-3 rounded-lg shadow-lg transition" id="btn-submit-final">
-                    Submit to Global Hall of Fame
-                </button>
-            </form>
-        </div>
-
-        <!-- SCORE REPORT CARD -->
-        <div id="report-card" class="hidden bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl text-center space-y-6">
-            <h2 id="report-title" class="text-3xl font-extrabold">Quiz Completed!</h2>
-            <div class="text-6xl font-bold text-yellow-500" id="final-score">0/0</div>
-            <p id="report-feedback" class="text-gray-500 dark:text-gray-400">Excellent performance! You're diving deep into the Scriptures.</p>
-            
-            <!-- Download Certificate Button -->
-            <button onclick="downloadCertificate()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition inline-flex items-center space-x-2">
-                <i class="fa-solid fa-certificate"></i>
-                <span id="btn-cert">Download Certificate</span>
-            </button>
-
-            <!-- Play Again & Return Buttons -->
-            <div class="flex justify-center space-x-4">
-                <button onclick="restartHub()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-sm font-bold px-4 py-2 rounded-lg" id="btn-home">Home</button>
-                <button onclick="shareScore()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-lg flex items-center space-x-2">
-                    <i class="fa-brands fa-facebook"></i>
-                    <span id="btn-share">Share Score</span>
-                </button>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- FOOTER WITH DONATION & eSEWA -->
-    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p class="text-xs text-gray-500" id="footer-text">© 2026 Bible Quiz Ministry. Spreading His Word Globally.</p>
-            
-            <div class="flex items-center space-x-3">
-                <span class="text-xs font-bold text-gray-400" id="footer-support">Support Our Ministry:</span>
-                <!-- eSewa / Khalti Nepali mode, PayPal International -->
-                <button onclick="donate('esewa')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3 py-1.5 rounded flex items-center space-x-1">
-                    <span>💚 eSewa / Khalti</span>
-                </button>
-                <button onclick="donate('paypal')" class="bg-sky-600 hover:bg-sky-700 text-white text-[10px] font-bold px-3 py-1.5 rounded flex items-center space-x-1">
-                    <span>💙 PayPal / Stripe</span>
-                </button>
-            </div>
-        </div>
-    </footer>
-
-    <!-- INTERACTIVE GAME LOGIC (JAVASCRIPT) -->
-    <script>
-        // TRANSLATION DICTIONARY FOR PERFECT INTERNATIONALIZATION
-        const i18n = {
-            en: {
-                navTitle: "Bible Quiz Championship",
-                kidsOff: "Kids Mode: OFF",
-                kidsOn: "Kids Mode: ON",
-                welcome: "Bible Championship Arena",
-                authDesc: "Test your biblical knowledge, compete with churches globally, and win certifications.",
-                loginGoogle: "Sign in with Google",
-                loginPhone: "Sign in with Phone / OTP",
-                loginGuest: "Play as Guest",
-                streak: "Day Streak",
-                xp: "XP Points",
-                dailyVerseTitle: "Verse of the Day",
-                classicTitle: "Classic Quiz Journey",
-                classicDesc: "Progress book by book. Unlock next chapters automatically.",
-                tourneyTitle: "Championship Tournament",
-                tourneyDesc: "Real-time survival. Finalists must register Church & Pastor!",
-                tourneyStatus: "Live Championship",
-                btnReport: "Report Mistake",
-                btnNext: "Next Question",
-                btnHome: "Main Hub",
-                btnShare: "Share Score",
-                btnCert: "Download Certificate",
-                lblChamp: "Your Name",
-                lblChurch: "Your Church Name",
-                lblPastor: "Pastor's Name",
-                btnSubmitFinal: "Register Championship to Hall of Fame",
-                congrats: "CONGRATULATIONS CHAMPION!",
-                finalSub: "You survived all knockout rounds! Please immortalize your local fellowship details below.",
-                footerText: "© 2026 Bible Quiz Ministry. Spreading His Word Globally.",
-                footerSupport: "Support Ministry:"
-            },
-            ne: {
-                navTitle: "बाइबल क्विज च्याम्पियनसिप",
-                kidsOff: "बालबालिका मोड: बन्द",
-                kidsOn: "बालबालिका मोड: अन",
-                welcome: "बाइबल प्रतियोगिता मैदानमा स्वागत छ",
-                authDesc: "बाइबल सम्बन्धी आफ्नो ज्ञान परीक्षण गर्नुहोस्, विश्वभरका चर्चहरूसँग प्रतिस्पर्धा गर्नुहोस् र प्रमाणपत्र प्राप्त गर्नुहोस्।",
-                loginGoogle: "गूगल खाताबाट लगइन गर्नुहोस्",
-                loginPhone: "मोबाईल नम्बर / OTP बाट लगइन गर्नुहोस्",
-                loginGuest: "गेस्टको रूपमा खेल्नुहोस्",
-                streak: "दैनिक उपस्थिति",
-                xp: "प्राप्त अंक (XP)",
-                dailyVerseTitle: "आजको बाइबल पद",
-                classicTitle: "क्लासिक क्विज यात्रा",
-                classicDesc: "एक-एक पुस्तक गर्दै खेल्नुहोस्। अर्को अध्याय स्वचालित रूपमा खुल्दै जानेछ।",
-                tourneyTitle: "राष्ट्रिय प्रतियोगिता मोड",
-                tourneyDesc: "रियल-टाइम नकआउट प्रतिस्पर्धा। फाइनल विजेताले चर्च र पास्टरको विवरण राख्नुपर्नेछ!",
-                tourneyStatus: "लाइभ प्रतिस्पर्धा",
-                btnReport: "गल्ती रिपोर्ट गर्नुहोस्",
-                btnNext: "अर्को प्रश्न",
-                btnHome: "मुख्य पृष्ठ",
-                btnShare: "नतिजा सेयर गर्नुहोस्",
-                btnCert: "प्रमाणपत्र डाउनलोड गर्नुहोस्",
-                lblChamp: "विजेताको नाम",
-                lblChurch: "चर्चको नाम",
-                lblPastor: "आफ्नो पास्टरको नाम",
-                btnSubmitFinal: "ग्लोबल हल अफ फेममा दर्ता गर्नुहोस्",
-                congrats: "हार्दिक बधाई छ विजेताज्यू!",
-                finalSub: "तपाईंले टुर्नामेन्ट जित्नुभएको छ! आफ्नो स्थानीय मण्डलीलाई विश्वव्यापी मञ्चमा चिनाउन तलको विवरण भर्नुहोस्।",
-                footerText: "© २०२६ बाइबल क्विज सेवकाइ। वचन प्रचारमा समर्पित।",
-                footerSupport: "हाम्रो सेवकाइलाई सहयोग गर्नुहोस्:"
-            }
-        };
-
-        // GLOBAL APPLICATION STATE
-        let currentLang = 'en';
-        let kidsMode = false;
-        let activeQuizType = 'classic';
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let timerInterval;
-        let timeLeft = 15;
-
-        // BIBLE QUESTIONS DATABASE (ENGLISH & NEPALI COMPATIBLE)
-        const bibleQuestions = {
-            en: {
-                classic: [
-                    {
-                        question: "In the beginning, God created the heavens and the earth.",
-                        options: ["Genesis 1:1", "John 1:1", "Exodus 1:1", "Matthew 1:1"],
-                        answer: "Genesis 1:1",
-                        hint: "It is the very first verse of the Bible.",
-                        explanation: "Genesis is the book of beginnings, establishing God as Creator.",
-                        difficulty: "Beginner"
-                    },
-                    {
-                        question: "For God so loved the world that He gave His only begotten Son...",
-                        options: ["John 3:16", "Romans 5:8", "Galatians 2:20", "Ephesians 2:8"],
-                        answer: "John 3:16",
-                        hint: "Found in the Gospel of John, chapter 3.",
-                        explanation: "This verse encapsulates the entire message of salvation through Christ.",
-                        difficulty: "Intermediate"
-                    }
-                ],
-                tournament: [
-                    {
-                        question: "Which prophet was swallowed by a great fish after fleeing from God's command?",
-                        options: ["Jonah", "Elijah", "Daniel", "Amos"],
-                        answer: "Jonah",
-                        hint: "He was sent to preach to Nineveh.",
-                        explanation: "Jonah spent three days and nights inside the belly of the great fish.",
-                        difficulty: "Expert"
-                    }
-                ]
-            },
-            ne: {
-                classic: [
-                    {
-                        question: "आदिमा परमेश्वरले आकाश र पृथ्वी सृष्टि गर्नुभयो। यो पद कहाँ छ?",
-                        options: ["उत्पत्ति १:१", "यूहन्ना १:१", "प्रस्थान १:१", "मत्ती १:१"],
-                        answer: "उत्पत्ति १:१",
-                        hint: "यो बाइबलको सबैभन्दा पहिलो पुस्तक र पद हो।",
-                        explanation: "उत्पत्ति सृष्टिको पुस्तक हो, जसले परमेश्वरलाई सृष्टिकर्ताको रूपमा प्रस्तुत गर्दछ।",
-                        difficulty: "Beginner"
-                    },
-                    {
-                        question: "किनभने परमेश्वरले संसारलाई यस्तो प्रेम गर्नुभयो कि उहाँले आफ्ना एकमात्र पुत्र दिनुभयो...",
-                        options: ["यूहन्ना ३:१६", "रोमी ५:८", "गलाती २:२०", "एफिसी २:८"],
-                        answer: "यूहन्ना ३:१६",
-                        hint: "यूहन्नाको सुसमाचार, अध्याय ३ मा हेर्नुहोस्।",
-                        explanation: "यो पदले येशू ख्रीष्टद्वारा पाइने मुक्तिको मूल सन्देश बुझाउँछ।",
-                        difficulty: "Intermediate"
-                    }
-                ],
-                tournament: [
-                    {
-                        question: "परमेश्वरको आज्ञा पालन नगरी भाग्दा कुन अगमवक्तालाई ठूलो माछाले निलेको थियो?",
-                        options: ["योना", "एलिया", "दानियल", "आमोस"],
-                        answer: "योना",
-                        hint: "उहाँलाई निनवे सहरमा प्रचार गर्न पठाइएको थियो।",
-                        explanation: "योना तीन दिन र तीन रात माछाको पेटभित्र रहेका थिए।",
-                        difficulty: "Expert"
-                    }
-                ]
-            }
-        };
-
-        // THEME & UTILITY FUNCTIONS
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const icon = document.getElementById('theme-icon');
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                icon.className = "fa-solid fa-moon text-gray-600 text-lg";
+                generatedData = JSON.stringify(finalArray, null, 4); 
+                
+                statusEl.innerText = "✅ सफलता! प्रश्नहरू तयार भए। तलबाट डाउनलोड गर्नुहोस्।";
+                statusEl.style.color = "green";
+                downloadBtn.style.display = 'block';
             } else {
-                html.classList.add('dark');
-                icon.className = "fa-solid fa-sun text-yellow-400 text-lg";
+                throw new Error("API ले सही उत्तर संरचना पठाएन।");
             }
+        } catch (error) {
+            // अब यो ब्लकले वास्तविक त्रुटि (जस्तै Token Limit वा API Key error) देखाउनेछ
+            statusEl.innerText = "❌ त्रुटि: " + error.message;
+            statusEl.style.color = "red";
+            console.error(error);
+        } finally {
+            document.getElementById('generateBtn').disabled = false;
         }
+    }
 
-        function switchLanguage(lang) {
-            currentLang = lang;
-            const dictionary = i18n[lang];
+    function downloadJSON() {
+        if (!generatedData) return;
+        let safeName = document.getElementById('chapterDetails').value.trim().replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        if (!safeName) safeName = "questions";
+        
+        const blob = new Blob([generatedData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `nnrv_${safeName}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+</script>
 
-            // Update UI components while avoiding mixed text entirely
-            document.getElementById('nav-title').textContent = dictionary.navTitle;
-            document.getElementById('kids-btn-text').textContent = kidsMode ? dictionary.kidsOn : dictionary.kidsOff;
-            document.getElementById('auth-welcome').textContent = dictionary.welcome;
-            document.getElementById('auth-desc').textContent = dictionary.authDesc;
-            document.getElementById('login-google').textContent = dictionary.loginGoogle;
-            document.getElementById('login-phone').textContent = dictionary.loginPhone;
-            document.getElementById('login-guest').textContent = dictionary.loginGuest;
-            document.getElementById('stat-streak').textContent = dictionary.streak;
-            document.getElementById('stat-xp').textContent = dictionary.xp;
-            document.getElementById('daily-verse-title').textContent = dictionary.dailyVerseTitle;
-            document.getElementById('mode-classic-title').textContent = dictionary.classicTitle;
-            document.getElementById('mode-classic-desc').textContent = dictionary.classicDesc;
-            document.getElementById('mode-tourney-title').textContent = dictionary.tourneyTitle;
-            document.getElementById('mode-tourney-desc').textContent = dictionary.tourneyDesc;
-            document.getElementById('tourney-status').textContent = dictionary.tourneyStatus;
-            document.getElementById('btn-report').textContent = dictionary.btnReport;
-            document.getElementById('btn-next').textContent = dictionary.btnNext;
-            document.getElementById('btn-home').textContent = dictionary.btnHome;
-            document.getElementById('btn-share').textContent = dictionary.btnShare;
-            document.getElementById('btn-cert').textContent = dictionary.btnCert;
-            
-            // Finalist Form Translations
-            document.getElementById('final-congrats').textContent = dictionary.congrats;
-            document.getElementById('final-sub').textContent = dictionary.finalSub;
-            document.getElementById('lbl-champion').textContent = dictionary.lblChamp;
-            document.getElementById('lbl-church').textContent = dictionary.lblChurch;
-            document.getElementById('lbl-pastor').textContent = dictionary.lblPastor;
-            document.getElementById('btn-submit-final').textContent = dictionary.btnSubmitFinal;
-
-            document.getElementById('footer-text').textContent = dictionary.footerText;
-            document.getElementById('footer-support').textContent = dictionary.footerSupport;
-
-            // Simple update to dynamic daily verse language
-            if (lang === 'ne') {
-                document.getElementById('daily-verse').textContent = '"तपाईंको वचन मेरो खुट्टाको निम्ति बत्ती र मेरो बाटोको निम्ति उज्यालो हो।"';
-                document.getElementById('daily-verse-ref').textContent = "- भजनसंग्रह ११९:१०५";
-            } else {
-                document.getElementById('daily-verse').textContent = '"Your word is a lamp for my feet, a light on my path."';
-                document.getElementById('daily-verse-ref').textContent = "- Psalm 119:105";
-            }
-        }
-
-        function toggleKidsMode() {
-            kidsMode = !kidsMode;
-            document.getElementById('kids-btn-text').textContent = kidsMode ? i18n[currentLang].kidsOn : i18n[currentLang].kidsOff;
-            alert(currentLang === 'ne' ? "बालबालिका मोड परिवर्तन भयो!" : "Kids Mode Toggled!");
-        }
-
-        // SIMULATED AUTH
-        function simulateLogin(method) {
-            document.getElementById('auth-card').classList.add('hidden');
-            document.getElementById('game-hub').classList.remove('hidden');
-        }
-
-        // QUIZ SYSTEM LOGIC
-        function startQuiz(type) {
-            activeQuizType = type;
-            currentQuestionIndex = 0;
-            score = 0;
-            document.getElementById('game-hub').classList.add('hidden');
-            document.getElementById('quiz-arena').classList.remove('hidden');
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            clearInterval(timerInterval);
-            document.getElementById('explanation-box').classList.add('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-            
-            const questions = bibleQuestions[currentLang][activeQuizType];
-            
-            if (currentQuestionIndex >= questions.length) {
-                endQuiz();
-                return;
-            }
-
-            const q = questions[currentQuestionIndex];
-            
-            // Update Question Text & Difficulty
-            document.getElementById('question-level').textContent = "Level: " + q.difficulty;
-            document.getElementById('question-text').innerHTML = q.question;
-            
-            // Setup Timer
-            timeLeft = 15;
-            document.getElementById('timer').textContent = timeLeft + "s";
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer').textContent = timeLeft + "s";
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    revealAnswer(null); // Timeout
-                }
-            }, 1000);
-
-            // Populate Options
-            const container = document.getElementById('options-container');
-            container.innerHTML = "";
-            q.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-yellow-50 dark:hover:bg-gray-700 transition font-medium flex justify-between items-center";
-                btn.innerHTML = `<span>${opt}</span>`;
-                btn.onclick = () => revealAnswer(opt, btn);
-                container.appendChild(btn);
-            });
-        }
-
-        function revealAnswer(selectedOption, clickedBtn) {
-            clearInterval(timerInterval);
-            const q = bibleQuestions[currentLang][activeQuizType][currentQuestionIndex];
-            const container = document.getElementById('options-container');
-            const buttons = container.querySelectorAll('button');
-
-            buttons.forEach(btn => {
-                btn.disabled = true;
-                const optText = btn.querySelector('span').textContent;
-                if (optText === q.answer) {
-                    btn.classList.add('bg-green-100', 'dark:bg-green-950', 'border-green-500');
-                    btn.innerHTML += `<i class="fa-solid fa-circle-check text-green-500"></i>`;
-                } else if (selectedOption && optText === selectedOption) {
-                    btn.classList.add('bg-red-100', 'dark:bg-red-950', 'border-red-500');
-                    btn.innerHTML += `<i class="fa-solid fa-circle-xmark text-red-500"></i>`;
-                }
-            });
-
-            if (selectedOption === q.answer) {
-                score++;
-            }
-
-            // Show Explanation
-            document.getElementById('explanation-box').classList.remove('hidden');
-            document.getElementById('explanation-text').textContent = q.explanation;
-            document.getElementById('verse-ref').textContent = q.answer;
-            document.getElementById('next-btn').classList.remove('hidden');
-        }
-
-        function nextQuestion() {
-            currentQuestionIndex++;
-            loadQuestion();
-        }
-
-        // LIFELINE MOCKS
-        function use5050() {
-            const q = bibleQuestions[currentLang][activeQuizType][currentQuestionIndex];
-            const container = document.getElementById('options-container');
-            const buttons = Array.from(container.querySelectorAll('button'));
-            let removed = 0;
-            
-            buttons.forEach(btn => {
-                const optText = btn.querySelector('span').textContent;
-                if (optText !== q.answer && removed < 2) {
-                    btn.style.opacity = '0.3';
-                    btn.disabled = true;
-                    removed++;
-                }
-            });
-            document.getElementById('lifeline-5050').disabled = true;
-            document.getElementById('lifeline-5050').classList.add('opacity-50');
-        }
-
-        function useAudiencePoll() {
-            alert(currentLang === 'ne' ? "६५% दर्शकहरूले सही उत्तर रोजेका छन्!" : "65% of the audience points to the correct option!");
-            document.getElementById('lifeline-poll').disabled = true;
-            document.getElementById('lifeline-poll').classList.add('opacity-50');
-        }
-
-        function reportError() {
-            alert(currentLang === 'ne' ? "तपाईंको रिपोर्ट दर्ता भयो! हामी यसलाई समीक्षा गर्नेछौँ।" : "Error reported! Thank you for helping us maintain accuracy.");
-        }
-
-        // END OF QUIZ OR TOURNAMENT WINNER
-        function endQuiz() {
-            document.getElementById('quiz-arena').classList.add('hidden');
-            
-            if (activeQuizType === 'tournament') {
-                // Open the grand final bracket form
-                document.getElementById('tournament-finalist-card').classList.remove('hidden');
-            } else {
-                // Open standard report card
-                document.getElementById('report-card').classList.remove('hidden');
-                document.getElementById('final-score').textContent = `${score} / ${bibleQuestions[currentLang][activeQuizType].length}`;
-            }
-        }
-
-        function submitFinalist(e) {
-            e.preventDefault();
-            const champ = document.getElementById('champion-name').value;
-            const church = document.getElementById('church-name').value;
-            const pastor = document.getElementById('pastor-name').value;
-
-            alert(currentLang === 'ne' 
-                ? `उत्कृष्ट! ${champ} (${church}) को नाम दर्ता भएको छ। पास्टर ${pastor} लाई बधाई ज्ञापन गरिनेछ!`
-                : `Excellent! Champion ${champ} from ${church} has been registered. Notification sent to Pastor ${pastor}.`
-            );
-            restartHub();
-        }
-
-        function restartHub() {
-            document.getElementById('report-card').classList.add('hidden');
-            document.getElementById('tournament-finalist-card').classList.add('hidden');
-            document.getElementById('game-hub').classList.remove('hidden');
-        }
-
-        // SHARE & DONATE
-        function shareScore() {
-            alert("Score shared to social media channels!");
-        }
-
-        function downloadCertificate() {
-            alert("Generating your printable PDF Certificate... Downloaded!");
-        }
-
-        function donate(platform) {
-            if (platform === 'esewa') {
-                alert("Redirection to eSewa/Khalti SDK integration...");
-            } else {
-                alert("Redirecting to PayPal / International Merchant Gateway...");
-            }
-        }
-
-        // Default setup
-        switchLanguage('en');
-    </script>
 </body>
 </html>
